@@ -13,6 +13,5 @@ var oscillator2 = new Oscillator(context, 'sine');
 /**
  * Have them phase modulate each other (tee hee hee)
  */
- 
- oscillator1.setPhaseOscillator( oscillator2 );
- oscillator2.setPhaseOscillator( oscillator1 );
+oscillator1.setPhaseOscillator( oscillator2 );
+oscillator2.setPhaseOscillator( oscillator1 );

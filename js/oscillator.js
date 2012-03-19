@@ -8,7 +8,7 @@ function Oscillator(context, shape) {
 	this.context = context;
 
 	// Create an audio node
-	this.node = context.createJavaScriptNode(128, 0, 1);	
+	this.node = context.createJavaScriptNode(1024, 0, 1);	
 	
 	// Used to generate waveform shape
 	this.phase = 0;
@@ -16,7 +16,8 @@ function Oscillator(context, shape) {
 	this.frequency = 440;	
 	this.sampleRate = this.context.sampleRate;
 	this.amplitude = 1;
-	this.buffer = null;
+	this.workingBuffer = [];	
+	this.outputBuffer = [];
 
 	//Phase modulation settings
 	this.phaseOscillator = null; 
@@ -61,7 +62,6 @@ Oscillator.prototype.setFrequency = function(frequency) {
  */
 Oscillator.prototype.setPhaseOscillator = function(phaseOscillator) {
 	if (typeof(phaseOscillator) == 'object') {
-		console.log();
 		this.phaseOscillator = phaseOscillator; 
 	}
 }
@@ -69,18 +69,19 @@ Oscillator.prototype.setPhaseOscillator = function(phaseOscillator) {
 /**
  * Sets the amount by which the phase oscillator modulates this oscillator
  */
-Oscillator.prototype.setPhaseOscillatorAmount = function(phaseOscillatorAmount) {
-	if (typeof(phaseOscillatorAmount) == 'number') {
-		this.phaseOscillatorAmount = phaseOscillatorAmount;
+Oscillator.prototype.setPhaseOscillatorAmount = function(phaseOscillatorAmplitude) {
+	if (typeof(phaseOscillatorAmplitude) == 'number') {
+		this.phaseOscillatorAmplitude = phaseOscillatorAmplitude;
 	} else {
 		throw 'setPhaseOscillatorAmount only accepts numeric values';	
 	}
 }
 
 Oscillator.prototype.process = function(e) {
-	this.buffer = e.outputBuffer.getChannelData(0);
-	for (var i = 0; i < this.buffer.length; i++) {
-		this.buffer[i] = this.getSample();
+	this.outputBuffer = e.outputBuffer.getChannelData(0);
+	for (var i = 0; i < this.outputBuffer.length; i++) {
+		this.workingBuffer[i] = this.getSample();
+		this.outputBuffer[i] = this.workingBuffer[i] * this.amplitude;
 		this.phase += this.frequency / this.sampleRate + this.calculatePhaseModulation(i);
 		while (this.phase > 1.0) this.phase -= 1;
 	}
@@ -110,7 +111,7 @@ Oscillator.prototype.getSample = function() {
 	switch (this.shape) {
 		case 'sine':
 		default: 
-			return this.amplitude * Math.sin( this.phase * Math.PI * 2.0 );
+			return Math.sin( this.phase * Math.PI * 2.0 );
 		break;
 	}
 }
@@ -118,17 +119,11 @@ Oscillator.prototype.getSample = function() {
 /**
  * Calculates the phase modulation offset
  */ 
-Oscillator.prototype.calculatePhaseModulation = function( offset ) {
-	if (
-		typeof(this.phaseOscillator == 'object')
-		&& this.phaseOscillator.playing == true		
-		&& this.phaseOscillatorAmplitude > 0
-		&& this.phaseOscillator.buffer != null
-		&& this.phaseOscillator.buffer.length == this.buffer.length
-	) {	
-		//Phase lock will suffice for now...
-		return this.phaseOscillator.buffer[offset] * this.phaseOscillatorAmplitude;
-	} else {
-		return 0;
-	}
+Oscillator.prototype.calculatePhaseModulation = function( offset ) {	
+	if ( typeof(this.phaseOscillator) != 'object' ) return 0;	
+	if ( this.phaseOscillator.playing != true ) return 0;
+	if ( this.phaseOscillatorAmplitude == 0) return 0;
+	if ( this.phaseOscillator.workingBuffer == null) return 0;
+	if ( this.phaseOscillator.workingBuffer.length != this.workingBuffer.length) throw "Buffer size mismatch";
+	return this.phaseOscillator.workingBuffer[offset] * this.phaseOscillatorAmplitude;
 }
