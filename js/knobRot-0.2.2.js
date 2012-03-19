@@ -473,7 +473,7 @@
 				$realValueField.data('knobRot').outputField.data('knobRot').calculatedValue = $realValueField.data('knobRot').calculatedValue;
 
 				//Execute the custom callback
-				$this.callback();				
+				$realValueField.data('knobRot').outputField.callback();		
 			}
 		},
 		/**
