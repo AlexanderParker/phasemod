@@ -48,7 +48,7 @@ Oscillator.prototype.setAmplitude = function(amplitude) {
 }
 
 Oscillator.prototype.setFrequency = function(frequency) {
-	if (typeof(amplitude) == 'number') {
+	if (typeof(frequency) == 'number') {
 		this.frequency = frequency;
 	} else {
 		throw 'setFrequency only accepts numeric values';
@@ -63,7 +63,11 @@ Oscillator.prototype.setPhaseOscillator = function(phaseOscillator) {
 }
 
 Oscillator.prototype.setPhaseOscillatorAmount = function(phaseOscillatorAmount) {
-	this.phaseOscillatorAmount = phaseOscillatorAmount;
+	if (typeof(frequency) == 'number') {
+		this.phaseOscillatorAmount = phaseOscillatorAmount;
+	} else {
+		throw 'setPhaseOscillatorAmount only accepts numeric values';	
+	}
 }
 
 Oscillator.prototype.process = function(e) {
