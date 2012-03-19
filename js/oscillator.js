@@ -2,7 +2,7 @@
  * Current supported wave shapes are:
  * 	'sine' - A basic sine wave 
  */
-Oscillator = function(context, shape) {
+function Oscillator(context, shape) {
 	
 	//Context the oscillator is in
 	this.context = context;
@@ -15,7 +15,7 @@ Oscillator = function(context, shape) {
 	this.shape = shape;
 	this.frequency = 440;	
 	this.sampleRate = this.context.sampleRate;
-	this.amplitude = 0.5;
+	this.amplitude = 1;
 	this.buffer = null;
 
 	//Phase modulation settings
@@ -24,7 +24,7 @@ Oscillator = function(context, shape) {
 	
 	//@todo Oversampling and filtered decimation for anti-aliasing
 	this.overSample = false;
-	this.cutoff = 0.5;
+	this.cutoff = 1;
 	this.filterBuffer = 0;  
 	
 	//State variables
@@ -40,19 +40,30 @@ Oscillator = function(context, shape) {
  */
 
 Oscillator.prototype.setAmplitude = function(amplitude) {
-	this.amplitude = amplitude;
+	if (typeof(amplitude) == 'number') {
+		this.amplitude = amplitude;
+	} else {
+		throw 'setAmplitude only accepts numeric values';
+	};
 }
 
 Oscillator.prototype.setFrequency = function(frequency) {
-	this.frequency = frequency;
+	if (typeof(amplitude) == 'number') {
+		this.frequency = frequency;
+	} else {
+		throw 'setFrequency only accepts numeric values';
+	};
 }
 
 Oscillator.prototype.setPhaseOscillator = function(phaseOscillator) {
-	this.phaseOscillator = null; 
+	if (typeof(phaseOscillator) == 'object') {
+		console.log();
+		this.phaseOscillator = phaseOscillator; 
+	}
 }
 
-Oscillator.prototype.setPhaseOscillatorAmount = function(phaseOscillatorAmplitude) {
-	this.phaseOscillatorAmount = 0.5;
+Oscillator.prototype.setPhaseOscillatorAmount = function(phaseOscillatorAmount) {
+	this.phaseOscillatorAmount = phaseOscillatorAmount;
 }
 
 Oscillator.prototype.process = function(e) {
@@ -87,10 +98,11 @@ Oscillator.prototype.pause = function() {
  * current phase offset
  */
 Oscillator.prototype.getSample = function() {
-	switch (this.type) {
+return this.amplitude * Math.sin( this.phase * Math.PI * 2.0 );
+	switch (this.shape) {
 		case 'sine':
 		default: 
-			return this.amplitude * Math.sin( this.phase * Math.PI * 2.0 )
+			return this.amplitude * Math.sin( this.phase * Math.PI * 2.0 );
 		break;
 	}
 }

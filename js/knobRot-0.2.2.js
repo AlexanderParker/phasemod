@@ -241,10 +241,7 @@
 					
 					// Handle knob value change events
 					$this.on('knobrefresh.knobRot', function() {
-					
-						//Execute the custom callback
-						$this.callback();
-						
+										
 						//Do the dirty
 						realValueField.data('knobRot').dirtyData = true;
 					});
@@ -474,6 +471,9 @@
 				$realValueField.data('knobRot').calculatedValue = methods.calculateValue( $realValueField );
 				$realValueField.data('knobRot').outputField.val($realValueField.data('knobRot').calculatedValue);				
 				$realValueField.data('knobRot').outputField.data('knobRot').calculatedValue = $realValueField.data('knobRot').calculatedValue;
+
+				//Execute the custom callback
+				$this.callback();				
 			}
 		},
 		/**
