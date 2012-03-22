@@ -1,6 +1,11 @@
 /**
  * Current supported wave shapes are:
- * 	'sine' - A basic sine wave 
+ * 	'sine' - A basic sine wave
+ *
+ * Oscillator.js was originally derived from SineWave.js by 0xfe
+ * with improvements made to add phase modulation support and
+ * future addition of other wave shapes
+ *
  */
 function Oscillator(context, shape) {
 	
