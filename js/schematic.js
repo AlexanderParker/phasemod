@@ -7,7 +7,7 @@ var context = new webkitAudioContext();
 /**
  * Initialise our two oscillators
  */
-var oscillator1 = new Oscillator(context, 'sawtooth');
+var oscillator1 = new Oscillator(context, 'triangle');
 var oscillator2 = new Oscillator(context, 'sine');
 
 /**

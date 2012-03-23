@@ -148,6 +148,9 @@ Oscillator.prototype.getSample = function() {
 		case 'sawtooth': 
 			return this.phase;
 		break;		
+		case 'triangle': 
+			return (this.phase > 0.5) ? 1.0 - ((this.phase - 0.5) * 2) : this.phase * 2;
+		break;		
 		case 'sine':
 		default: 
 			return Math.sin( this.phase * Math.PI * 2.0 );
