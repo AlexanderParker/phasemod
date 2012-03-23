@@ -8,7 +8,7 @@
  *
  */
 function Oscillator(context, shape) {
-	
+	console.log(context);
 	//Context the oscillator is in
 	this.context = context;
 
@@ -143,8 +143,11 @@ Oscillator.prototype.pause = function() {
 Oscillator.prototype.getSample = function() {
 	switch (this.shape) {
 		case 'square': 
-			
+			return (this.phase > 0.5) ? 1 : 0;			
 		break;
+		case 'sawtooth': 
+			return this.phase;
+		break;		
 		case 'sine':
 		default: 
 			return Math.sin( this.phase * Math.PI * 2.0 );
