@@ -13,20 +13,29 @@ function Oscillator(context, shape) {
 	this.context = context;
 
 	// Create an audio node
-	this.node = context.createJavaScriptNode(1024, 0, 1);	
+	this.node = context.createJavaScriptNode(1024, 0, 2);	
 	
 	// Used to generate waveform shape
 	this.phase = 0;
 	this.shape = shape;
 	this.frequency = 440;	
 	this.sampleRate = this.context.sampleRate;
-	this.amplitude = 1;
+	this.amplitude = 1
+	
+	// Define: 
+	//   workingBuffer for pre-amplified waveform.
+	//   outputBufferLeft and outputBufferRight for post-amplified waveform.
+	//   phaseModBuffer for phase modulation
+	
+	this.outputBufferLeft = [];
+	this.outputBufferRight = [];	
+	
 	this.workingBuffer = [];	
-	this.outputBuffer = [];
+
+	this.phaseModBuffer = [];
 
 	//Phase modulation settings
-	this.phaseOscillator = null; 
-	this.phaseOscillatorAmplitude = 0;
+	this.phaseModAmount = 0;
 	
 	//@todo Oversampling and filtered decimation for anti-aliasing
 	this.overSample = false;
@@ -41,10 +50,10 @@ function Oscillator(context, shape) {
 	this.node.onaudioprocess = function(e) { $this.process(e) };
 }
 
-/*
+/**
  * Getters and setters
  */
-
+ 
 Oscillator.prototype.setAmplitude = function(amplitude) {
 	if (typeof(amplitude) == 'number') {
 		this.amplitude = amplitude;
@@ -62,32 +71,52 @@ Oscillator.prototype.setFrequency = function(frequency) {
 	};
 }
 
+Oscillator.prototype.getWorkingBuffer = function() {
+	return this.workingBuffer;	
+}
+
+Oscillator.prototype.getOutputBuffer = function() {
+	return this.outputBuffer;
+}
+
 /**
- * Assigns a second oscillator to modulate this oscillator
+ * Assigns a buffer to modulate the phase of this oscillator
  */
-Oscillator.prototype.setPhaseOscillator = function(phaseOscillator) {
-	if (typeof(phaseOscillator) == 'object') {
-		this.phaseOscillator = phaseOscillator; 
-	}
+Oscillator.prototype.setPhaseModBuffer = function( phaseModBuffer ) {
+	if (typeof(phaseModBuffer) != 'object') throw 'Phase Modulation buffer type mistmatch.';
+	if (phaseModBuffer.length != this.workingBuffer.length) throw 'Phase Modulation buffer size must be equal to the oscillator buffer size';	
+	this.phaseModBuffer = phaseModBuffer; 
 }
 
 /**
  * Sets the amount by which the phase oscillator modulates this oscillator
  */
-Oscillator.prototype.setPhaseOscillatorAmount = function(phaseOscillatorAmplitude) {
-	if (typeof(phaseOscillatorAmplitude) == 'number') {
-		this.phaseOscillatorAmplitude = phaseOscillatorAmplitude;
+Oscillator.prototype.setPhaseModAmount = function(phaseModAmount) {
+	if (typeof(phaseModAmount) == 'number') {
+		this.phaseModAmount = phaseModAmount;
 	} else {
-		throw 'setPhaseOscillatorAmount only accepts numeric values';	
+		throw 'phaseModAmount only accepts numeric values';	
 	}
 }
 
 Oscillator.prototype.process = function(e) {
-	this.outputBuffer = e.outputBuffer.getChannelData(0);
-	for (var i = 0; i < this.outputBuffer.length; i++) {
+	
+	//Initialise the buffer	
+	this.outputBufferLeft = e.outputBuffer.getChannelData(0);
+	this.outputBufferRight = e.outputBuffer.getChannelData(1);	
+	
+	for (var i = 0; i < this.outputBufferLeft.length; i++) {
+	
+		//Calculate the raw waveform
 		this.workingBuffer[i] = this.getSample();
-		this.outputBuffer[i] = this.workingBuffer[i] * this.amplitude;
+		
+		//Process the raw waveform
+		this.outputBufferLeft[i] = this.outputBufferRight[i] = this.workingBuffer[i] * this.amplitude;
+		
+		//Advance the phase
 		this.phase += this.frequency / this.sampleRate + this.calculatePhaseModulation(i);
+		
+		//Wrap the waveform
 		while (this.phase > 1.0) this.phase -= 1;
 	}
 }
@@ -109,11 +138,13 @@ Oscillator.prototype.pause = function() {
 }
 
 /**
- * Retrieves the appropriate sample for the configured waveform and the 
- * current phase offset
+ * Calculates the waveform at the current phase
  */
 Oscillator.prototype.getSample = function() {
 	switch (this.shape) {
+		case 'square': 
+			
+		break;
 		case 'sine':
 		default: 
 			return Math.sin( this.phase * Math.PI * 2.0 );
@@ -125,10 +156,9 @@ Oscillator.prototype.getSample = function() {
  * Calculates the phase modulation offset
  */ 
 Oscillator.prototype.calculatePhaseModulation = function( offset ) {	
-	if ( typeof(this.phaseOscillator) != 'object' ) return 0;	
-	if ( this.phaseOscillator.playing != true ) return 0;
+	if ( this.phaseModBuffer.length == 0) return 0;	
+	if ( typeof(this.phaseModBuffer) != 'object' ) return 0;
 	if ( this.phaseOscillatorAmplitude == 0) return 0;
-	if ( this.phaseOscillator.workingBuffer == null) return 0;
-	if ( this.phaseOscillator.workingBuffer.length != this.workingBuffer.length) throw "Buffer size mismatch";
-	return this.phaseOscillator.workingBuffer[offset] * this.phaseOscillatorAmplitude;
+	if ( this.phaseModBuffer.length != this.workingBuffer.length) return 0;
+	return this.phaseModBuffer[offset] * this.phaseModAmount;
 }

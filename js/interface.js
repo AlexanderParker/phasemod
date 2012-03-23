@@ -48,7 +48,7 @@ $(document).ready( function() {
 		dragMultiplier: 0.005,
 		hideInput: true,
 		callback: function() {
-			oscillator1.setPhaseOscillatorAmount($("#modsend1").knobRot('getvalue'));
+			oscillator1.setPhaseModAmount($("#modsend1").knobRot('getvalue'));
 		}
 	});  			
 	
@@ -100,7 +100,7 @@ $(document).ready( function() {
 		dragMultiplier: 0.005,
 		hideInput: true,		
 		callback: function() {
-			oscillator2.setPhaseOscillatorAmount($("#modsend2").knobRot('getvalue'));
+			oscillator2.setPhaseModAmount($("#modsend2").knobRot('getvalue'));
 		}
 	});  			
 });
