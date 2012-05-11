@@ -7,8 +7,7 @@
  * future addition of other wave shapes
  *
  */
-function Oscillator(context, shape) {
-	console.log(context);
+soundlib.oscillator = function(context, shape) {
 	//Context the oscillator is in
 	this.context = context;
 
@@ -54,7 +53,7 @@ function Oscillator(context, shape) {
  * Getters and setters
  */
  
-Oscillator.prototype.setAmplitude = function(amplitude) {
+soundlib.oscillator.prototype.setAmplitude = function(amplitude) {
 	if (typeof(amplitude) == 'number') {
 		this.amplitude = amplitude;
 	} else {
@@ -63,7 +62,7 @@ Oscillator.prototype.setAmplitude = function(amplitude) {
 }
 
 
-Oscillator.prototype.setFrequency = function(frequency) {
+soundlib.oscillator.prototype.setFrequency = function(frequency) {
 	if (typeof(frequency) == 'number') {
 		this.frequency = frequency;
 	} else {
@@ -71,18 +70,18 @@ Oscillator.prototype.setFrequency = function(frequency) {
 	};
 }
 
-Oscillator.prototype.getWorkingBuffer = function() {
+soundlib.oscillator.prototype.getWorkingBuffer = function() {
 	return this.workingBuffer;	
 }
 
-Oscillator.prototype.getOutputBuffer = function() {
+soundlib.oscillator.prototype.getOutputBuffer = function() {
 	return this.outputBuffer;
 }
 
 /**
  * Assigns a buffer to modulate the phase of this oscillator
  */
-Oscillator.prototype.setPhaseModBuffer = function( phaseModBuffer ) {
+soundlib.oscillator.prototype.setPhaseModBuffer = function( phaseModBuffer ) {
 	if (typeof(phaseModBuffer) != 'object') throw 'Phase Modulation buffer type mistmatch.';
 	if (phaseModBuffer.length != this.workingBuffer.length) throw 'Phase Modulation buffer size must be equal to the oscillator buffer size';	
 	this.phaseModBuffer = phaseModBuffer; 
@@ -91,7 +90,7 @@ Oscillator.prototype.setPhaseModBuffer = function( phaseModBuffer ) {
 /**
  * Sets the amount by which the phase oscillator modulates this oscillator
  */
-Oscillator.prototype.setPhaseModAmount = function(phaseModAmount) {
+soundlib.oscillator.prototype.setPhaseModAmount = function(phaseModAmount) {
 	if (typeof(phaseModAmount) == 'number') {
 		this.phaseModAmount = phaseModAmount;
 	} else {
@@ -99,7 +98,7 @@ Oscillator.prototype.setPhaseModAmount = function(phaseModAmount) {
 	}
 }
 
-Oscillator.prototype.process = function(e) {
+soundlib.oscillator.prototype.process = function(e) {
 	
 	//Initialise the buffer	
 	this.outputBufferLeft = e.outputBuffer.getChannelData(0);
@@ -124,7 +123,7 @@ Oscillator.prototype.process = function(e) {
 /**
  * Starts the oscillator
  */
-Oscillator.prototype.play = function() {
+soundlib.oscillator.prototype.play = function() {
 	this.node.connect(this.context.destination);
 	this.playing = true;
 }
@@ -132,7 +131,7 @@ Oscillator.prototype.play = function() {
 /**
  * Stops the oscillator
  */
-Oscillator.prototype.pause = function() {
+soundlib.oscillator.prototype.pause = function() {
 	this.node.disconnect();
 	this.playing = false;
 }
@@ -140,7 +139,7 @@ Oscillator.prototype.pause = function() {
 /**
  * Calculates the waveform at the current phase
  */
-Oscillator.prototype.getSample = function() {
+soundlib.oscillator.prototype.getSample = function() {
 	switch (this.shape) {
 		case 'square': 
 			return (this.phase > 0.5) ? 1 : 0;			
@@ -161,7 +160,7 @@ Oscillator.prototype.getSample = function() {
 /**
  * Calculates the phase modulation offset
  */ 
-Oscillator.prototype.calculatePhaseModulation = function( offset ) {	
+soundlib.oscillator.prototype.calculatePhaseModulation = function( offset ) {	
 	if ( this.phaseModBuffer.length == 0) return 0;	
 	if ( typeof(this.phaseModBuffer) != 'object' ) return 0;
 	if ( this.phaseOscillatorAmplitude == 0) return 0;
