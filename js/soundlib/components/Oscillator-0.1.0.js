@@ -33,7 +33,9 @@ function Oscillator( settings ) {
 		
 		// Shape mapping is used to map integer values to waveforms
 		// with the array offset defining the integer to map the shape to
-		'shapeMapping': ['sine', 'triangle', 'sawtooth', 'square', 'whitenoise']
+		'shapeMapping': ['sine', 'triangle', 'sawtooth', 'square', 'whitenoise'],
+
+		'envelope': null
 
 	};
 	
@@ -80,9 +82,11 @@ function Oscillator( settings ) {
 	this.phase = 0;
 	this.shape = settings.shape;
 	this.frequency = settings.frequency;
+	this.nextFrequency = settings.frequency;	
 	this.frequencyOffset = settings.frequencyOffset;	
 	this.sampleRate = this.context.sampleRate;
 	this.gain = settings.gain;
+	this.envelope = settings.envelope;
 
 	// Attach a gain node
 	this.gainNode = this.context.createGainNode();
@@ -116,6 +120,9 @@ function Oscillator( settings ) {
 	// Setup audio data callback to generate waveform data
 	var $this  = this;
 	this.node.onaudioprocess = function(e) { $this.process(e) };
+
+	// Attach the node to its output via the audio gain
+	this.node.connect(this.gainNode);
 }
 
 /**
@@ -126,8 +133,8 @@ Oscillator.prototype.setGain = function(gain) {
 	if (typeof(gain) == 'number') {
 		//Apply gain smoothing to prevent pops and clicks
 		var currentTime = this.context.currentTime;
-		this.gainNode.gain.setValueAtTime(this.gain, currentTime);		
-		this.gainNode.gain.linearRampToValueAtTime(gain, currentTime + 0.01);
+		this.gainNode.gain.cancelScheduledValues( currentTime );		
+		this.gainNode.gain.setTargetValueAtTime(gain, currentTime, 0.02);
 		this.gain = gain;	
 	} else {
 		throw 'setGain only accepts numeric (float) values';
@@ -137,7 +144,8 @@ Oscillator.prototype.setGain = function(gain) {
 
 Oscillator.prototype.setFrequency = function(frequency) {
 	if (typeof(frequency) == 'number') {
-		this.frequency = frequency;
+		if (this.envelope != null) this.envelope.wait = true;		
+		this.nextFrequency = frequency;
 	} else {
 		throw 'setFrequency only accepts numeric values';
 	};
@@ -184,7 +192,6 @@ Oscillator.prototype.process = function(e) {
 	//Initialise the buffer	
 	this.outputBufferLeft = e.outputBuffer.getChannelData(0);
 	this.outputBufferRight = e.outputBuffer.getChannelData(1);	
-	
 	for (var i = 0; i < this.outputBufferLeft.length; i++) {
 	
 		//Calculate the raw waveform
@@ -194,10 +201,14 @@ Oscillator.prototype.process = function(e) {
 		this.outputBufferLeft[i] = this.outputBufferRight[i] = this.workingBuffer[i];
 		
 		//Advance the phase
-		this.phase += this.frequency / this.sampleRate + this.calculatePhaseModulation(i);
+		this.phase += (this.frequency + this.frequencyOffset) / this.sampleRate + this.calculatePhaseModulation(i);
 		
 		//Wrap the waveform
-		while (this.phase > 1.0) this.phase -= 1;
+		while (this.phase > 1.0) {
+			this.phase -= 1;
+			this.frequency = this.nextFrequency;
+			if (this.envelope != null) this.envelope.wait = false;				
+		}
 	}
 }
 
@@ -205,15 +216,15 @@ Oscillator.prototype.process = function(e) {
  * Starts the oscillator
  */
 Oscillator.prototype.play = function() {
-	this.node.connect(this.gainNode);
+	this.setGain(1);
 	this.playing = true;
 }
 
 /**
  * Stops the oscillator
  */
-Oscillator.prototype.pause = function() {
-	this.node.disconnect();
+Oscillator.prototype.mute = function() {
+	this.setGain(0);
 	this.playing = false;
 }
 
@@ -251,3 +262,10 @@ Oscillator.prototype.calculatePhaseModulation = function( offset ) {
 	if ( this.phaseModBuffer.length != this.workingBuffer.length) return 0;
 	return this.phaseModBuffer[offset] * this.phaseModAmount;
 }
+
+/**
+ * Allow hard phase syncing (reset phase to 0)
+ */
+ Oscillator.prototype.phaseReset = function() {
+ 	this.phase = 0;
+ }
