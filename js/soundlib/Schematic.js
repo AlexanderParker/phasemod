@@ -8,16 +8,23 @@ var synthesizer = new schematic( audioContext );
 
 function schematic( context ) {
 
-	// Initialise our two oscillators
-	this.oscillatorSettings = {
-		'context': audioContext,
-		'shape': 'sine'
-	}
+	this.context = context;
 
 	// Some basic settings
 	this.oscillator = [];
 	this.oscillatorAmount = 2;
-	
+
+	// Create a master envelope
+
+	this.masterEnvelope = new Envelope({'context' : this.context});	
+
+	// Initialise our two oscillators
+	this.oscillatorSettings = {
+		'context': audioContext,
+		'shape': 'sine',
+		'destination': this.masterEnvelope.connectPoint
+	}	
+
 	// Initialise two oscillators
 	for (var i = 0; i < this.oscillatorAmount; i++) {
 		this.oscillator[i] = new Oscillator( this.oscillatorSettings );

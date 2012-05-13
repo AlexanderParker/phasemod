@@ -36,7 +36,7 @@ $(document).ready( function() {
 		dragMultiplier: 0.01,
 		hideInput: true,		
 		callback: function() {
-			synthesizer.oscillator[0].setAmplitude($("#amplitude1").knobRot('getvalue'));
+			synthesizer.oscillator[0].setGain($("#amplitude1").knobRot('getvalue'));
 		}
 	});
 	
@@ -88,7 +88,7 @@ $(document).ready( function() {
 		dragMultiplier: 0.01,
 		hideInput: true,		
 		callback: function() {
-			synthesizer.oscillator[1].setAmplitude($("#amplitude2").knobRot('getvalue'));
+			synthesizer.oscillator[1].setGain($("#amplitude2").knobRot('getvalue'));
 		}
 	}); 
 	

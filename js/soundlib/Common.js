@@ -3,6 +3,7 @@ document.ready = function() {
 	include(basepath + '/components/Base.js');
 	include(basepath + '/components/Oscillator-0.1.0.js');
 	include(basepath + '/components/Adder.js');
+	include(basepath + '/components/Envelope.js');	
 	include(basepath + '/Interface.js');
 	include(basepath + '/Schematic.js');
 	function include(path) {

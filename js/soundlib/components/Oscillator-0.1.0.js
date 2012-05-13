@@ -16,13 +16,15 @@ function Oscillator( settings ) {
 	// Override these settings to customise behavior
 	var settingDefaults = {
 		'context': null,
+
+		'destination': null,
 		
 		// Current supported wave shapes are:
 		// 'sine',  'whitenoise',  'square',  'sawtooth' and  'triangle' 		
 		'shape': 'sine',
 		'buffer': 1024,
 		'frequency': 440,
-		'amplitude': '1',
+		'gain': '1',
 		
 		// You can provide a reference to another audio buffer to modulate this
 		// oscillator against
@@ -31,6 +33,7 @@ function Oscillator( settings ) {
 		// Shape mapping is used to map integer values to waveforms
 		// with the array offset defining the integer to map the shape to
 		'shapeMapping': ['sine', 'triangle', 'sawtooth', 'square', 'whitenoise']
+
 	};
 	
 	// Mix in user defined settings
@@ -45,6 +48,14 @@ function Oscillator( settings ) {
 		throw 'Can not initialise oscillator: Audio context undefined.';
 	} else {
 		this.context = settings.context;
+	}
+
+	// Determine the destination for the output of this node
+	if ( typeof( settings.destination ) == 'undefined' || settings.destination == null) {
+		// By default, attach the oscillator output to the master output
+		this.destination = this.context.destination;
+	} else {
+		this.destination = settings.destination;
 	}
 
 	// Buffer length must be valid
@@ -63,14 +74,23 @@ function Oscillator( settings ) {
 	
 	// Create the audio node
 	this.node = this.context.createJavaScriptNode(settings.buffer, 0, 2);
-	
+
 	// Used to generate waveform shape
 	this.phase = 0;
 	this.shape = settings.shape;
 	this.frequency = settings.frequency;
 	this.sampleRate = this.context.sampleRate;
-	this.amplitude = settings.amplitude;
-	
+	this.gain = settings.gain;
+
+	// Attach a gain node
+	this.gainNode = this.context.createGainNode();
+	this.gainNode.connect(this.destination);
+	this.gainNode.gain.setValueAtTime(this.gain, this.context.currentTime);
+	this.gain = this.gainNode.gain;
+
+	// For consistency...
+	this.connectPoint = this.gainNode;
+
 	// Define: 
 	//   workingBuffer for pre-amplified waveform.
 	//   outputBufferLeft and outputBufferRight for post-amplified waveform.
@@ -101,11 +121,11 @@ function Oscillator( settings ) {
  * Getters and setters
  */
  
-Oscillator.prototype.setAmplitude = function(amplitude) {
-	if (typeof(amplitude) == 'number') {
-		this.amplitude = amplitude;
+Oscillator.prototype.setGain = function(gain) {
+	if (typeof(gain) == 'number') {
+		this.gain = gain;
 	} else {
-		throw 'setAmplitude only accepts numeric values';
+		throw 'setGain only accepts numeric values';
 	};
 }
 
@@ -158,7 +178,7 @@ Oscillator.prototype.process = function(e) {
 		this.workingBuffer[i] = this.getSample();
 		
 		//Process the raw waveform
-		this.outputBufferLeft[i] = this.outputBufferRight[i] = this.workingBuffer[i] * this.amplitude;
+		this.outputBufferLeft[i] = this.outputBufferRight[i] = this.workingBuffer[i] * this.gain;
 		
 		//Advance the phase
 		this.phase += this.frequency / this.sampleRate + this.calculatePhaseModulation(i);
@@ -172,7 +192,7 @@ Oscillator.prototype.process = function(e) {
  * Starts the oscillator
  */
 Oscillator.prototype.play = function() {
-	this.node.connect(this.context.destination);
+	this.node.connect(this.gainNode);
 	this.playing = true;
 }
 
@@ -214,7 +234,7 @@ Oscillator.prototype.getSample = function() {
 Oscillator.prototype.calculatePhaseModulation = function( offset ) {	
 	if ( this.phaseModBuffer.length == 0) return 0;	
 	if ( typeof(this.phaseModBuffer) != 'object' ) return 0;
-	if ( this.phaseOscillatorAmplitude == 0) return 0;
+	if ( this.phaseModAmount == 0) return 0;
 	if ( this.phaseModBuffer.length != this.workingBuffer.length) return 0;
 	return this.phaseModBuffer[offset] * this.phaseModAmount;
 }
