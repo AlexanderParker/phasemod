@@ -5,13 +5,13 @@ $(document).ready( function() {
 	$('#play1').click(start1);
 
 	function start1() {
-		oscillator1.play();
+		synthesizer.oscillator[0].play();
 		$('#play1').text("Stop");
 		$('#play1').click(stop1);
 	}
 
 	function stop1() {
-		oscillator1.pause();
+		synthesizer.oscillator[0].pause();
 		$('#play1').text("Start");
 		$('#play1').click(start1);
 	}
@@ -24,7 +24,7 @@ $(document).ready( function() {
 		dragMultiplier: 15, 
 		hideInput: true,		
 		callback: function() {
-			oscillator1.setFrequency($("#frequency1").knobRot('getvalue'));
+			synthesizer.oscillator[0].setFrequency($("#frequency1").knobRot('getvalue'));
 		}
 	});
 
@@ -36,7 +36,7 @@ $(document).ready( function() {
 		dragMultiplier: 0.01,
 		hideInput: true,		
 		callback: function() {
-			oscillator1.setAmplitude($("#amplitude1").knobRot('getvalue'));
+			synthesizer.oscillator[0].setAmplitude($("#amplitude1").knobRot('getvalue'));
 		}
 	});
 	
@@ -48,7 +48,7 @@ $(document).ready( function() {
 		dragMultiplier: 0.005,
 		hideInput: true,
 		callback: function() {
-			oscillator1.setPhaseModAmount($("#modsend1").knobRot('getvalue'));
+			synthesizer.oscillator[0].setPhaseModAmount($("#modsend1").knobRot('getvalue'));
 		}
 	});  			
 	
@@ -57,13 +57,13 @@ $(document).ready( function() {
 	$('#play2').click(start2);
 
 	function start2() {
-		oscillator2.play();
+		synthesizer.oscillator[1].play();
 		$('#play2').text("Stop");
 		$('#play2').click(stop2);
 	}
 
 	function stop2() {
-		oscillator2.pause();
+		synthesizer.oscillator[1].pause();
 		$('#play2').text("Start");
 		$('#play2').click(start2);
 	}	
@@ -76,7 +76,7 @@ $(document).ready( function() {
 		dragMultiplier: 15, 
 		hideInput: true,		
 		callback: function() {
-			oscillator2.setFrequency($("#frequency2").knobRot('getvalue'));
+			synthesizer.oscillator[1].setFrequency($("#frequency2").knobRot('getvalue'));
 		}
 	});
 
@@ -88,7 +88,7 @@ $(document).ready( function() {
 		dragMultiplier: 0.01,
 		hideInput: true,		
 		callback: function() {
-			oscillator2.setAmplitude($("#amplitude2").knobRot('getvalue'));
+			synthesizer.oscillator[1].setAmplitude($("#amplitude2").knobRot('getvalue'));
 		}
 	}); 
 	
@@ -100,7 +100,7 @@ $(document).ready( function() {
 		dragMultiplier: 0.005,
 		hideInput: true,		
 		callback: function() {
-			oscillator2.setPhaseModAmount($("#modsend2").knobRot('getvalue'));
+			synthesizer.oscillator[1].setPhaseModAmount($("#modsend2").knobRot('getvalue'));
 		}
 	});  			
 });

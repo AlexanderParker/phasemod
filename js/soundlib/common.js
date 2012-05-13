@@ -1,10 +1,10 @@
 document.ready = function() {
 	var basepath = 'js/soundlib';
-	include(basepath + '/components/base.js');
-	include(basepath + '/components/oscillator.js');
-	include(basepath + '/components/adder.js');
-	include(basepath + '/interface.js');
-	include(basepath + '/schematic.js');
+	include(basepath + '/components/Base.js');
+	include(basepath + '/components/Oscillator-0.1.0.js');
+	include(basepath + '/components/Adder.js');
+	include(basepath + '/Interface.js');
+	include(basepath + '/Schematic.js');
 	function include(path) {
 		var js = document.createElement("script");
 		js.type = "text/javascript";
