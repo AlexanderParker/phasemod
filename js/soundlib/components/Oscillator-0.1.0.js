@@ -269,3 +269,11 @@ Oscillator.prototype.calculatePhaseModulation = function( offset ) {
  Oscillator.prototype.phaseReset = function() {
  	this.phase = 0;
  }
+
+ Oscillator.prototype.serialize() {
+ 	//@todo
+ }
+
+  Oscillator.prototype.deserialize(data) {
+ 	//@todo
+ }

@@ -1,30 +1,20 @@
 $(document).ready( function() {
 	
 	//Oscillator 1
-	
-	$('#play1').click(start1);
 
-	function start1() {
-		synthesizer.oscillator[0].play();
-		$('#play1').text("Stop");
-		$('#play1').click(stop1);
-	}
-
-	function stop1() {
-		synthesizer.oscillator[0].pause();
-		$('#play1').text("Start");
-		$('#play1').click(start1);
-	}
+	var keysDown = [];
 	
+	var freqRange = 1024;
+
 	$("#frequency1").knobRot({
 		classes: ['knob1'],
-		minimumValue: 1,
-		maximumValue: 2048,
+		minimumValue: 0 - freqRange,
+		maximumValue: freqRange,
 		frameCount: 21,
 		dragMultiplier: 15, 
 		hideInput: true,		
 		callback: function() {
-			synthesizer.oscillator[0].setFrequency($("#frequency1").knobRot('getvalue'));
+			synthesizer.oscillator[0].setFrequencyOffset(parseFloat($("#frequency1").knobRot('getvalue')));
 		}
 	});
 
@@ -52,31 +42,15 @@ $(document).ready( function() {
 		}
 	});  			
 	
-	//Oscillator 2
-	
-	$('#play2').click(start2);
-
-	function start2() {
-		synthesizer.oscillator[1].play();
-		$('#play2').text("Stop");
-		$('#play2').click(stop2);
-	}
-
-	function stop2() {
-		synthesizer.oscillator[1].pause();
-		$('#play2').text("Start");
-		$('#play2').click(start2);
-	}	
-	
 	$("#frequency2").knobRot({
 		classes: ['knob1'],
-		minimumValue: 1,
-		maximumValue: 2048,
+		minimumValue: 0 - freqRange,
+		maximumValue: freqRange,
 		frameCount: 21,
-		dragMultiplier: 15, 
+		dragMultiplier: 5, 
 		hideInput: true,		
 		callback: function() {
-			synthesizer.oscillator[1].setFrequency($("#frequency2").knobRot('getvalue'));
+			synthesizer.oscillator[1].setFrequencyOffset(parseFloat($("#frequency2").knobRot('getvalue')));
 		}
 	});
 
@@ -102,5 +76,75 @@ $(document).ready( function() {
 		callback: function() {
 			synthesizer.oscillator[1].setPhaseModAmount($("#modsend2").knobRot('getvalue'));
 		}
-	});  			
+	}); 
+
+	/*
+	 * Set up keyboard mapping
+	 */	
+	$('body').keydown(function(e) {
+		var frequency = 0;
+		if (keysDown[e.which]) return;
+		keysDown[e.which] = true;
+		switch (e.which) {
+			case 81: //C4
+				frequency = 261.626;
+			break;
+			case 50: //C#4
+				frequency = 277.183;
+			break;			
+			case 87: //D4
+				frequency = 293.665;
+			break;	
+			case 51: //D#4
+				frequency = 311.127;
+			break;			
+			case 69: //E4
+				frequency = 329.628;
+			break;	
+			case 82: //F4
+				frequency = 349.228;
+			break;	
+			case 53: //F#4
+				frequency = 369.994;
+			break;
+			case 84: //G4
+				frequency = 391.995;
+			break;
+			case 54: //G#4
+				frequency = 415.305;
+			break;
+			case 89: //A4
+				frequency = 440.000;
+			break;
+			case 55: //A#4
+				frequency = 466.164;
+			break;
+			case 85: //B4
+				frequency = 493.883;
+			break;
+			case 73: //C5
+				frequency = 523.251;
+			break;	
+			case 57: //C#5
+				frequency = 554.365;
+			break;
+			case 79: //D5
+				frequency = 587.330;
+			break;	
+			case 48: //D#5
+				frequency = 622.254;
+			break;
+			case 80: //E5
+				frequency = 659.255;
+			break;					
+		}
+		if (frequency > 0) {
+			for (i in synthesizer.oscillator) {
+				synthesizer.oscillator[i].setFrequency(frequency);				
+			}
+			synthesizer.masterEnvelope.trigger();
+		}
+	}).keyup(function(e){
+		keysDown[e.which] = false;
+	});
 });
