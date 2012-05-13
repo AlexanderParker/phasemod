@@ -192,6 +192,11 @@ Oscillator.prototype.process = function(e) {
 	//Initialise the buffer	
 	this.outputBufferLeft = e.outputBuffer.getChannelData(0);
 	this.outputBufferRight = e.outputBuffer.getChannelData(1);	
+
+	//Add relative frequency, protect against going below 0
+	
+	var currentFrequency = this.frequency + this.frequencyOffset;
+	if (currentFrequency < 0) currentFrequency = 0;
 	for (var i = 0; i < this.outputBufferLeft.length; i++) {
 	
 		//Calculate the raw waveform
@@ -201,7 +206,7 @@ Oscillator.prototype.process = function(e) {
 		this.outputBufferLeft[i] = this.outputBufferRight[i] = this.workingBuffer[i];
 		
 		//Advance the phase
-		this.phase += (this.frequency + this.frequencyOffset) / this.sampleRate + this.calculatePhaseModulation(i);
+		this.phase += (currentFrequency) / this.sampleRate + this.calculatePhaseModulation(i);
 		
 		//Wrap the waveform
 		while (this.phase > 1.0) {
