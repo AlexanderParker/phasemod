@@ -23,7 +23,8 @@ function Oscillator( settings ) {
 		// 'sine',  'whitenoise',  'square',  'sawtooth' and  'triangle' 		
 		'shape': 'sine',
 		'buffer': 1024,
-		'frequency': 440,
+		'frequency': 261.625565, //Middle C
+		'frequencyOffset': 0,
 		'gain': '1',
 		
 		// You can provide a reference to another audio buffer to modulate this
@@ -79,6 +80,7 @@ function Oscillator( settings ) {
 	this.phase = 0;
 	this.shape = settings.shape;
 	this.frequency = settings.frequency;
+	this.frequencyOffset = settings.frequencyOffset;	
 	this.sampleRate = this.context.sampleRate;
 	this.gain = settings.gain;
 
@@ -122,15 +124,13 @@ function Oscillator( settings ) {
  
 Oscillator.prototype.setGain = function(gain) {
 	if (typeof(gain) == 'number') {
-
 		//Apply gain smoothing to prevent pops and clicks
-		
 		var currentTime = this.context.currentTime;
 		this.gainNode.gain.setValueAtTime(this.gain, currentTime);		
 		this.gainNode.gain.linearRampToValueAtTime(gain, currentTime + 0.01);
 		this.gain = gain;	
 	} else {
-		throw 'setGain only accepts numeric values';
+		throw 'setGain only accepts numeric (float) values';
 	};
 }
 
@@ -138,6 +138,14 @@ Oscillator.prototype.setGain = function(gain) {
 Oscillator.prototype.setFrequency = function(frequency) {
 	if (typeof(frequency) == 'number') {
 		this.frequency = frequency;
+	} else {
+		throw 'setFrequency only accepts numeric values';
+	};
+}
+
+Oscillator.prototype.setFrequencyOffset = function(frequencyOffset) {
+	if (typeof(frequencyOffset) == 'number') {
+		this.frequencyOffset = frequencyOffset;
 	} else {
 		throw 'setFrequency only accepts numeric values';
 	};
