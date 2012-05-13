@@ -86,7 +86,6 @@ function Oscillator( settings ) {
 	this.gainNode = this.context.createGainNode();
 	this.gainNode.connect(this.destination);
 	this.gainNode.gain.setValueAtTime(this.gain, this.context.currentTime);
-	this.gain = this.gainNode.gain;
 
 	// For consistency...
 	this.connectPoint = this.gainNode;
@@ -123,7 +122,13 @@ function Oscillator( settings ) {
  
 Oscillator.prototype.setGain = function(gain) {
 	if (typeof(gain) == 'number') {
-		this.gain = gain;
+
+		//Apply gain smoothing to prevent pops and clicks
+		
+		var currentTime = this.context.currentTime;
+		this.gainNode.gain.setValueAtTime(this.gain, currentTime);		
+		this.gainNode.gain.linearRampToValueAtTime(gain, currentTime + 0.01);
+		this.gain = gain;	
 	} else {
 		throw 'setGain only accepts numeric values';
 	};
@@ -178,7 +183,7 @@ Oscillator.prototype.process = function(e) {
 		this.workingBuffer[i] = this.getSample();
 		
 		//Process the raw waveform
-		this.outputBufferLeft[i] = this.outputBufferRight[i] = this.workingBuffer[i] * this.gain;
+		this.outputBufferLeft[i] = this.outputBufferRight[i] = this.workingBuffer[i];
 		
 		//Advance the phase
 		this.phase += this.frequency / this.sampleRate + this.calculatePhaseModulation(i);
