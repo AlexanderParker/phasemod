@@ -1,17 +1,19 @@
-var SoundLib = SoundLib || {};
-var SoundLib.Prototypes = SoundLib.Prototypes || {};
-var SoundLib.Prototypes.Oscillator = SoundLib.Prototypes.Oscillator || {};
-
 /**
- * Provides an audio oscillator 
- */ 
+ * Set namespaces
+ */
+var SoundLib = SoundLib || function () {};
+var SoundLib.Prototypes = SoundLib.Prototypes || {};
+var SoundLib.Prototypes.Oscillator = SoundLib.Prototypes.Oscillator || function () {};
+/**
+ * Provides an audio oscillator
+ */
 (function(constructor) {
 	/**
 	 * Define the constructor
 	 *
 	 * Pass an options object to override default settings.
 	 *
-	 * (Audio Context is a minimum settings requirement.)	
+	 * (Audio Context is a minimum settings requirement.)
 	 */
 	constructor = function (options) {
 		this.settings = {
@@ -25,6 +27,8 @@ var SoundLib.Prototypes.Oscillator = SoundLib.Prototypes.Oscillator || {};
 			, frequencyOffset: 0
 			// Takes a callback to calculate a waveform.  See SoundLib.Classes.Waveform for examples
 			, waveformCalculator: SoundLib.Classes.Waveform.sine
+			// Pan position is generally left = 0, 0.5 = centre, 1 = right.  panCalculator may do otherwise...
+			, panPosition: 0.5
 			// Takes a callback to calculate panning.  See SoundLib.Classes.Pan for examples
 			, panCalculator: SoundLib.Classes.Pan.linear
 			// Set the zero-crossing threshold.  Smaller values will find crossings closer to zero but may miss some crossings
@@ -45,20 +49,20 @@ var SoundLib.Prototypes.Oscillator = SoundLib.Prototypes.Oscillator || {};
 		// Set the frequency (performs some range checks etc)
 		this.setFrequency(settings.frequency);
 		// workingBuffer for pre-amplified and panned waveform.
-		this.workingBuffer = [];			
+		this.workingBuffer = [];
 		// outputBufferLeft and outputBufferRight for post-amplified and panned waveform.
 		this.outputBufferLeft = [];
-		this.outputBufferRight = [];		
+		this.outputBufferRight = [];
 		// pre-calculate zero crossing threshold to reduce real-time processing overhead
 		this.zeroMin = 0.5 - this.settings.zeroThreshold;
 		this.zeroMax = 0.5 + this.settings.zeroThreshold;
 		// Setup audio data callback to generate waveform data
 		this.generatorNode.onaudioprocess = this.process.bind(this);
-	};	
+	};
 	/**
 	 * Assign p to this class's prototype for easier assignment
 	 */
-	var p = constructor.prototype;	
+	var p = constructor.prototype;
 	/**
 	 * Sets the waveform to the passed callback (see SoundLib.Classes.Waveform for examples)
 	 */
@@ -79,6 +83,18 @@ var SoundLib.Prototypes.Oscillator = SoundLib.Prototypes.Oscillator || {};
 			throw "Unable to assign callback as pan calculator.  It's either not a callback or it doesn't generate numbers."
 		}
 	};
+	p.setPanPosition = function (position) {
+		if (
+			typeof position === 'number'
+			&& position >= 0
+			&& position <= 1.0
+		) {
+			this.settings.panPosition = position;
+			this.calculatedPan = this.panCalculator.apply(this, this.settings.panPosition);
+		} else {
+			throw "Pan position must be a number between 0 (left) and 1 (right) inclusive.";
+		}
+	}
 	/**
 	 * Pass a boolean to set whether or not to wait for zero crossings before frequency shifts
 	 */
@@ -87,7 +103,7 @@ var SoundLib.Prototypes.Oscillator = SoundLib.Prototypes.Oscillator || {};
 			this.settings.waitForZeroCrossing = shouldWait;
 		} else {
 			throw 'shouldWait must be a boolean';
-		}		
+		}
 	}
 	/**
 	 * Creates the node used to generate waveform audio
@@ -101,26 +117,28 @@ var SoundLib.Prototypes.Oscillator = SoundLib.Prototypes.Oscillator || {};
 	p.sync = function () {
 		this.phase = 0;
 	};
+	/**
+	 * Check that the current buffer size is valid
+	 */
 	p.validateBufferSize = function () {
 		// Buffer length must be valid
 		// https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html#JavaScriptAudioNode-section
-		if (!(
-			this.settings.bufferLength == 256
-			|| this.settings.bufferLength == 512
-			|| this.settings.bufferLength == 1024
-			|| this.settings.bufferLength == 2048
-			|| this.settings.bufferLength == 4096
-			|| this.settings.bufferLength == 8192
-			|| this.settings.bufferLength == 16384
-		)) {
-			throw 'Invalid buffer length of ' + this.settings.bufferLength + ' specified for oscillator.  Must be one of  256, 512, 1024, 2048, 4096, 8192 or 16384 according to spec: https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html#JavaScriptAudioNode-section';
+		var validBuffers = [256, 512, 1024, 2048, 8192, 16384];
+		if ( validBuffers.indexOf(this.settings.bufferLength) === -1) {
+			throw 'Invalid buffer length of '
+				+ this.settings.bufferLength
+				+ ' specified for oscillator.  Must be one of  256, 512, 1024, 2048, 4096, 8192 or 16384'
+				+ ' according to spec: https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html#JavaScriptAudioNode-section';
 		}
 	};
+	/**
+	 * Check that the provided audio context is valid
+	 */
 	p.validateAudioContext = function () {
 		// We must have an audio context
 		if ( typeof this.settings.context === 'undefined' || this.settings.context === null ) {
 			throw 'Can not initialise oscillator: Audio context is null or undefined.';
-		}		
+		}
 	};
 	/**
 	 * Calculates the waveform at the current phase
@@ -133,7 +151,7 @@ var SoundLib.Prototypes.Oscillator = SoundLib.Prototypes.Oscillator || {};
 	 */
 	p.setFrequency = function (frequency) {
 		this.validateFrequency(frequency);
-		// We don't immediately set the frequency, 
+		// We don't immediately set the frequency,
 		// to prevent pops and clicks wait for zero crossing
 		this.nextFrequency = frequency;
 	};
@@ -162,10 +180,10 @@ var SoundLib.Prototypes.Oscillator = SoundLib.Prototypes.Oscillator || {};
 	 * and panning
 	 */
 	p.getWorkingBuffer = function () {
-		return this.workingBuffer;	
+		return this.workingBuffer;
 	}
 	/**
-	 * Retrieve the output buffer - that is the state of the buffer after to any 
+	 * Retrieve the output buffer - that is the state of the buffer after to any
 	 * processing such as phase modulation and panning
 	 */
 	p.getOutputBuffer = function () {
@@ -183,28 +201,29 @@ var SoundLib.Prototypes.Oscillator = SoundLib.Prototypes.Oscillator || {};
 		if (buffer.length != this.workingBuffer.length) {
 			throw 'Phase Modulation buffer size must be equal to the oscillator buffer size';
 		}
-		this.phaseModBuffer = buffer; 
+		this.phaseModBuffer = buffer;
 	}
 	/**
 	 * Calculates the next buffer segment thus generating the audio waveform
 	 * Caution: Called during real time audio buffer processing - avoid heavy processing
-	 */ 
-	p.process = function (e) {	
-		//Initialise the buffer	
+	 */
+	p.process = function (e) {
+		//Initialise the buffer
 		this.outputBufferLeft = e.outputBuffer.getChannelData(0);
-		this.outputBufferRight = e.outputBuffer.getChannelData(1);	
+		this.outputBufferRight = e.outputBuffer.getChannelData(1);
 		//Get the current frequency
-		var currentFrequency = this.getOffsetFrequency();
-		for (var i = 0; i < this.outputBufferLeft.length; i++) {		
+		var currentFrequency = this.getOffsetedFrequency();
+		for (var i = 0; i < this.settings.bufferLength; i++) {
 			//Calculate the raw waveform
 			this.workingBuffer[i] = this.getSample();
 			if (this.crossingZero()) {
 				this.frequency = this.nextFrequency;
 			}
-			//Process the raw waveform
-			this.outputBufferLeft[i] = this.outputBufferRight[i] = this.workingBuffer[i];			
+			//Process the output waveform
+			this.outputBufferLeft[i] = this.workingBuffer[i] * this.panLeftMultiplier;
+			this.outputBufferRight[i] = this.workingBuffer[i] * this.panRightMultiplier;
 			//Advance the phase (apply modulation, if any)
-			this.phase += (currentFrequency) / this.context.sampleRate + this.getPhaseModulation(i);			
+			this.phase += currentFrequency / this.context.sampleRate + this.getPhaseModulation(i);
 			//Wrap the waveform to keep between 0 and 1
 			while (this.phase > 1.0) {
 				this.phase -= 1;
@@ -218,17 +237,20 @@ var SoundLib.Prototypes.Oscillator = SoundLib.Prototypes.Oscillator || {};
 	p.isCrossingZero = function () {
 		return this.workingBuffer[i] > this.zeroMin && this.workingBuffer < this.zeroMax;
 	}
-	p.getOffsetFrequency = function() {
+	/**
+	 * Retrieve the frequency plus the offset, preventing negative frequencies
+	 */
+	p.getOffsetedFrequency = function() {
 		return (frequency = this.settings.frequency + this.settings.frequencyOffset) > 0 ? frequency : 0;
 	}
 	/**
 	 * Calculates the phase modulation offset
 	 * Caution: Called during real time audio buffer processing - avoid heavy processing
-	 */ 
-	p.getPhaseModulation = function ( offset ) {	
-		if ( 
+	 */
+	p.getPhaseModulation = function ( offset ) {
+		if (
 			typeof this.phaseModBuffer  === 'object'
-			&& this.phaseModBuffer.length === this.workingBuffer.length 
+			&& this.phaseModBuffer.length === this.workingBuffer.length
 		) {
 			return this.phaseModBuffer[offset];
 		}

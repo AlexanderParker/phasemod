@@ -1,4 +1,7 @@
-var SoundLib = SoundLib || {};
+/**
+ * Set namespaces
+ */
+var SoundLib = SoundLib || function () {};
 var SoundLib.Classes = SoundLib.Classes || {};
 var SoundLib.Classes.Pan = SoundLib.Classes.Pan || {};
 
@@ -8,12 +11,12 @@ var SoundLib.Classes.Pan = SoundLib.Classes.Pan || {};
  * Pan functions may accept pan offset as a parameter.  Pan can be
  * between 0 (left) and 1 (right) with 0.5 generally being center
  */
-SoundLib.Classes.Pan = {
+(function (P) {
 		/**
 		 * Returns a linear pan
 		 */
-		linear: function (pan) {
+		P.linear = function (pan) {
 			return pan;
-		}
+		};
 	}
-}
+})(SoundLib.Classes.Pan);

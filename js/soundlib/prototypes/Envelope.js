@@ -1,97 +1,101 @@
-var SoundLib = SoundLib || {};
+/**
+ * Set namespaces
+ */
+var SoundLib = SoundLib || function () {};
 var SoundLib.Prototypes = SoundLib.Prototypes || {};
-var SoundLib.Prototypes.Envelope = SoundLib.Prototypes.Envelope || {};
+var SoundLib.Prototypes.Envelope = SoundLib.Prototypes.Envelope || function () {};
 
 /**
+ * Define the constructor
+ *
  * Pass a settings object to initialize.  Context is a bare
  * requirement.
- *
  */
-
-function Envelope( settings ) {
-
+SoundLib.Prototypes.Envelope = function (options) {
 	// Override these settings to customise behavior
-	var settingDefaults = {
-		'context': null,
-		'gainNode': null,
-		'destination': null, 
-		'callback': null,
-		'graph': [
+	this.settings = {
+		// We need an audio context to determine buffer properties
+		bufferLength: 2048
+		// Does this envelope sustain?
+		, sustain: true
+		// Start point of the sustain loop
+		, sustainStart: 1
+		// End point of the sustain loop
+		, sustainEnd: 2
+		// Should the loop ping-pong
+		, pingPong: true
+		// Total length in seconds, not counting sustain
+		, length: 1
+		// Interpolation callback
+		, interpolation: SoundLib.Classes.Interpolate.linear
+		// Points in time that make up the envelope level			
+		, points: [
 			{
-				'time':'0.0',
-				'gain':'0.0'
-			},
-			{
-				'time':'0.5',
-				'gain':'1.0'
-			},
-			{
-				'time':'2.0',
-				'gain':'0.0'
+				'time': '0.0'
+				, 'level': '0.0'
+			}
+			, {
+				'time': '0.2'
+				, 'level': '1.0'
+			}
+			, {
+				'time': '0.8'
+				, 'level': '0.0'
+			}
+			, {
+				'time': '1.0'
+				, 'level': '0.0'
 			}
 		]
 	};
-	
-	// Mix in user defined settings
-	for (var key in settingDefaults) {
-		if (typeof( settings[key] ) == 'undefined') {
-			settings[key] = settingDefaults[key];
-		}
-	}	
+	// Extend the default settings
+	SoundLib.Classes.Helpers.extend(this.settings, options);
+	// Validate the audio context
+	this.validateAudioContext();
+	// Sync the envelope (reset offset to 0)
+	this.bufferOffset = 0;
+	// Create a buffer to store the generated envelope values
+	this.buffer = [];
+};
 
-	// We must have an audio context
-	if ( typeof( settings.context ) == 'undefined' || settings.context == null) {
-		throw 'Can not initialise envelope: Audio context undefined.';
-	} else {
-		this.context = settings.context;
+/**
+ * Check that the current buffer size is valid
+ */
+p.validateBufferSize = function () {
+	// Buffer length must be valid
+	// https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html#JavaScriptAudioNode-section
+	var validBuffers = [256, 512, 1024, 2048, 8192, 16384];
+	if ( validBuffers.indexOf(this.settings.bufferLength) === -1) {
+		throw 'Invalid buffer length of '
+			+ this.settings.bufferLength
+			+ ' specified for oscillator.  Must be one of  256, 512, 1024, 2048, 4096, 8192 or 16384'
+			+ ' according to spec: https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html#JavaScriptAudioNode-section';
 	}
+};
 
-	// Determine the destination for the output of the envelope
-	if ( typeof( settings.destination ) == 'undefined' || settings.destination == null) {
+/**
+ * Resets the envelope offset to 0
+ */
+SoundLib.Prototypes.Envelope.prototype.sync = function () {
+	this.offset = 0;	
+};
 
-		// By default, attach the oscillator output to the master output
-		this.destination = this.context.destination;
-	} else {
-		this.destination = settings.destination;
-	}
-
-	this.graph = settings.graph;
-
-	// Callback executed after envelope finishes
-	this.callback = settings.callback;
-
-	// Attach or create gain node
-	if ( typeof( settings.gainNode ) == 'undefined' || settings.gainNode == null) {
-		this.gainNode = this.context.createGainNode();
-	} else {
-		this.gainNode = settings.gainNode;
-	}
-	this.gainNode.connect(this.destination);
-	this.gainNode.gain.setValueAtTime(this.graph[0].gain, this.context.currentTime);
-
-	// For consistency...
-	this.connectPoint = this.gainNode;	
-
-	// To prevent pops and clicks
-	this.wait = false;
+/**
+ * Flushes (zeros out) the buffet
+ */
+SoundLib.Prototypes.Envelope.prototype.flushBuffer = function() {
+    var rv = new Array(len);
+    while (--len >= 0) {
+        rv[len] = val;
+    }
+    return rv;
 }
 
 /**
- * Modify the envelope graph
- * Graphs are passed in the form (for a one second ramp up):
- *		[
- *			{
- *				'time':'0.0', //time in seconds
- *				'gain':'0.0'
- *			},
- *			{
- *				'time':'1.0',
- *				'gain':'1.0'
- *			} 
- *		]
+ * Modify the envelope points
  */
 Envelope.prototype.setGraph = function( graph ) {
-	this.graph = graph;
+	this.settings.points = points;
 }
 
 /**
@@ -99,10 +103,7 @@ Envelope.prototype.setGraph = function( graph ) {
  * Currently only linear ramps are supported
  */
 Envelope.prototype.trigger = function() {
-	//Wait until the buffer is ready (flagged by the oscillator to this.wait), 
-	//to avoid triggering the envelope over old frequencies.  Will need a more robust
-	//signalling system at some point in the future in order to allow envelopes to
-	//sync with other buffers, not just oscillators
+
 	var that = this;
 	if (this.wait) { 
 		setTimeout(function(){that.trigger('test')}, 5); 

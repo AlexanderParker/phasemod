@@ -1,12 +1,21 @@
-var SoundLib = SoundLib || {};
+/**
+ * Set namespaces
+ */
+var SoundLib = SoundLib || function() {};
 var SoundLib.Prototypes = SoundLib.Prototypes || {};
-var SoundLib.Prototypes.Context = SoundLib.Prototypes.Context || {};
+var SoundLib.Prototypes.Context = SoundLib.Prototypes.Context || function() {};
 
-function soundlib() {
-	this.audioContext = null;
-	this.debugMode = false;
+/**
+ * Define the constructor
+ */	
+SoundLib.Prototypes.Context = function() {
+	// @todo add x-broser support as it becomes available
+	this.audioContext = new webkitAudioContext();
 }
 
-soundlib.prototype.init = function() {
-	this.audioContext = new webkitAudioContext();
+/**
+ * Retrieve the audio context
+ */
+SoundLib.Prototypes.Context.prototype.getContext = function() {
+	return this.audioContext();
 }
