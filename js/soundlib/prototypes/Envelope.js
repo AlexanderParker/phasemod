@@ -1,3 +1,7 @@
+var SoundLib = SoundLib || {};
+var SoundLib.Prototypes = SoundLib.Prototypes || {};
+var SoundLib.Prototypes.Envelope = SoundLib.Prototypes.Envelope || {};
+
 /**
  * Pass a settings object to initialize.  Context is a bare
  * requirement.

@@ -45,6 +45,15 @@ function schematic( ) {
 		'envelope': this.masterEnvelope
 	}	
 
+/**
+		// Attach a gain node
+		this.gainNode = this.context.createGainNode();
+		this.gainNode.connect(this.destination);
+		this.gainNode.gain.setValueAtTime(this.gain, this.context.currentTime);
+
+!!! attach a gain node to the context destination
+
+**/
 	// Initialise two oscillators
 	for (var i = 0; i < this.oscillatorAmount; i++) {
 		this.oscillator[i] = new Oscillator( this.oscillatorSettings );
