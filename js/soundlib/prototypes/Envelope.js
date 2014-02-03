@@ -77,24 +77,30 @@ p.validateBufferSize = function () {
  * Resets the envelope offset to 0
  */
 SoundLib.Prototypes.Envelope.prototype.sync = function () {
-	this.offset = 0;	
+	this.offset = 0;
+	this.flushBuffer();
+};
+
+SoundLib.Prototypes.Envelope.prototype.getBuffer = function () {
+	return this.buffer;
 };
 
 /**
- * Flushes (zeros out) the buffet
+ * Flushes (zeros out) the buffer
  */
-SoundLib.Prototypes.Envelope.prototype.flushBuffer = function() {
-    var rv = new Array(len);
-    while (--len >= 0) {
-        rv[len] = val;
+SoundLib.Prototypes.Envelope.prototype.flushBuffer = function () {	
+    var newBuffer = new Array(this.settings.bufferLength)
+      , offset = this.settings.bufferLength;
+    while (--offset >= 0) {
+        newBuffer[offset] = 0;
     }
-    return rv;
-}
+    this.buffer = newBuffer;
+};
 
 /**
  * Modify the envelope points
  */
-Envelope.prototype.setGraph = function( graph ) {
+SoundLib.Prototypes.Envelope.prototype.setGraph = function (graph) {
 	this.settings.points = points;
 }
 
