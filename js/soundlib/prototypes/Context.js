@@ -17,5 +17,5 @@ SoundLib.Prototypes.Context = function() {
  * Retrieve the audio context
  */
 SoundLib.Prototypes.Context.prototype.getContext = function() {
-	return this.audioContext();
+	return this.audioContext;
 }
