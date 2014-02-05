@@ -10,7 +10,7 @@ var SoundLib.Prototypes.Context = SoundLib.Prototypes.Context || function() {};
  */	
 SoundLib.Prototypes.Context = function() {
 	// @todo add x-broser support as it becomes available
-	this.audioContext = new webkitAudioContext();
+	this.audioContext = new AudioContext() || new webkitAudioContext();
 }
 
 /**
