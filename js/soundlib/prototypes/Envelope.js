@@ -2,51 +2,44 @@
  * Set namespaces
  */
 var SoundLib = SoundLib || function () {};
-var SoundLib.Prototypes = SoundLib.Prototypes || {};
-var SoundLib.Prototypes.Envelope = SoundLib.Prototypes.Envelope || function () {};
 
 /**
  * Define the constructor
  *
- * Pass a settings object to initialize.  Context is a bare
+ * Pass a options object to initialize.  Context is a bare
  * requirement.
  */
-SoundLib.Prototypes.Envelope = function (options) {
+SoundLib.Envelope = function (options) {
 	// Override these settings to customise behavior
 	this.settings = {
 		// We need an audio context to determine buffer properties
-		bufferLength: 2048
+		bufferLength: 2048,
 		// Does this envelope sustain?
-		, sustain: true
+		sustain: true,
 		// Start point of the sustain loop
-		, sustainStart: 1
+		sustainStart: 1,
 		// End point of the sustain loop
-		, sustainEnd: 2
+		sustainEnd: 2,
 		// Should the loop ping-pong
-		, pingPong: true
+		pingPong: true,
 		// Total length in seconds, not counting sustain
-		, length: 1
+		length: 1,
 		// Interpolation callback
-		, interpolation: SoundLib.Classes.Interpolate.linear
+		interpolation: SoundLib.Classes.Interpolate.linear,
 		// Points in time that make up the envelope level			
-		, points: [
-			{
-				'time': '0.0'
-				, 'level': '0.0'
-			}
-			, {
-				'time': '0.2'
-				, 'level': '1.0'
-			}
-			, {
-				'time': '0.8'
-				, 'level': '0.0'
-			}
-			, {
-				'time': '1.0'
-				, 'level': '0.0'
-			}
-		]
+		points: [{
+        			'time': '0.0',
+        			'level': '0.0'
+        		}, {
+        			'time': '0.2',
+        			'level': '1.0'
+        		}, {
+        			'time': '0.8',
+        			'level': '0.0'
+        		}, {
+        		    'time': '1.0',
+        			'level': '0.0'
+        	    }]
 	};
 	// Extend the default settings
 	SoundLib.Classes.Helpers.extend(this.settings, options);
@@ -61,9 +54,8 @@ SoundLib.Prototypes.Envelope = function (options) {
 /**
  * Check that the current buffer size is valid
  */
-p.validateBufferSize = function () {
-	// Buffer length must be valid
-	// https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html#JavaScriptAudioNode-section
+SoundLib.Envelope.prototype.validateBufferSize = function () {
+
 	var validBuffers = [256, 512, 1024, 2048, 8192, 16384];
 	if ( validBuffers.indexOf(this.settings.bufferLength) === -1) {
 		throw 'Invalid buffer length of '
@@ -76,31 +68,33 @@ p.validateBufferSize = function () {
 /**
  * Resets the envelope offset to 0
  */
-SoundLib.Prototypes.Envelope.prototype.sync = function () {
+SoundLib.Envelope.prototype.sync = function () {
 	this.offset = 0;
 	this.flushBuffer();
 };
 
-SoundLib.Prototypes.Envelope.prototype.getBuffer = function () {
+SoundLib.Envelope.prototype.getBuffer = function () {
 	return this.buffer;
 };
 
 /**
  * Flushes (zeros out) the buffer
  */
-SoundLib.Prototypes.Envelope.prototype.flushBuffer = function () {	
-    var newBuffer = new Array(this.settings.bufferLength)
-      , offset = this.settings.bufferLength;
+SoundLib.Envelope.prototype.flushBuffer = function () {	
+    var newBuffer = new Array(this.settings.bufferLength), 
+        offset = this.settings.bufferLength;
+        
     while (--offset >= 0) {
         newBuffer[offset] = 0;
     }
+    
     this.buffer = newBuffer;
 };
 
 /**
  * Modify the envelope points
  */
-SoundLib.Prototypes.Envelope.prototype.setGraph = function (graph) {
+SoundLib.Envelope.prototype.setGraph = function (graph) {
 	this.settings.points = points;
 }
 
@@ -110,9 +104,10 @@ SoundLib.Prototypes.Envelope.prototype.setGraph = function (graph) {
  */
 Envelope.prototype.trigger = function() {
 
-	var that = this;
 	if (this.wait) { 
-		setTimeout(function(){that.trigger('test')}, 5); 
+		setTimeout(function() {
+		    this.trigger('test')
+		}.bind(this)), 5); 
 		return;
 	}
 
@@ -121,8 +116,8 @@ Envelope.prototype.trigger = function() {
 
 	var smoothingTime = 0.03;
 
-	for (i in this.graph) {
-		if (i == 0) {
+	for (var i in this.graph) {
+		if (i === 0) {
 			// Initialise the envelope (smoothly)
 			this.gainNode.gain.setTargetValueAtTime(parseFloat(this.graph[i].gain), this.context.currentTime, smoothingTime);
 		} else {

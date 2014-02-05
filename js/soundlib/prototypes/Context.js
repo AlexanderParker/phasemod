@@ -1,21 +1,8 @@
-/**
- * Set namespaces
- */
-var SoundLib = SoundLib || function() {};
-var SoundLib.Prototypes = SoundLib.Prototypes || {};
-var SoundLib.Prototypes.Context = SoundLib.Prototypes.Context || function() {};
 
-/**
- * Define the constructor
- */	
-SoundLib.Prototypes.Context = function() {
-	// @todo add x-broser support as it becomes available
-	this.audioContext = new webkitAudioContext();
-}
+var SoundLib = SoundLib || {};
 
-/**
- * Retrieve the audio context
- */
-SoundLib.Prototypes.Context.prototype.getContext = function() {
-	return this.audioContext();
+SoundLib.Context = function() {
+	// SoundLib.Context is a Class wrapper around 
+	// non-standard AudioContext constructor
+	return new AudioContext() || new webkitAudioContext();
 }
