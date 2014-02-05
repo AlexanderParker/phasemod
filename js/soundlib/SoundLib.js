@@ -26,6 +26,8 @@ SoundLib = function() {
 SoundLib.prototype.include = function(path) {
 	var js = document.createElement("script");
 	js.type = "text/javascript";
+	js.onload = function () {
+		document.body.appendChild(js);
+	}
 	js.src = path;
-	document.body.appendChild(js);
 };
