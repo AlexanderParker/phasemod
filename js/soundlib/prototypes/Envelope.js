@@ -15,21 +15,21 @@ SoundLib.Prototypes.Envelope = function (options) {
 	// Override these settings to customise behavior
 	this.settings = {
 		// We need an audio context to determine buffer properties
-		bufferLength: 2048
+		bufferLength: 2048,
 		// Does this envelope sustain?
-		, sustain: true
+		sustain: true,
 		// Start point of the sustain loop
-		, sustainStart: 1
+		sustainStart: 1,
 		// End point of the sustain loop
-		, sustainEnd: 2
+		sustainEnd: 2,
 		// Should the loop ping-pong
-		, pingPong: true
+		pingPong: true,
 		// Total length in seconds, not counting sustain
-		, length: 1
+		length: 1,
 		// Interpolation callback
-		, interpolation: SoundLib.Classes.Interpolate.linear
+		interpolation: SoundLib.Classes.Interpolate.linear,
 		// Points in time that make up the envelope level			
-		, points: [
+		points: [
 			{
 				'time': '0.0'
 				, 'level': '0.0'
