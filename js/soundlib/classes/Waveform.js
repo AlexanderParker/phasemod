@@ -25,7 +25,7 @@ var SoundLib.Classes.Waveform = SoundLib.Classes.Waveform || {};
 		 *
 		 */		
 		W.square = function (phase) { 
-			return phase > 0.5) ? 1 : 0;
+			return phase > 0.5 ? 1 : 0;
 		};
 		/**
 		 * Generates a sawtooth sample 
